@@ -27,19 +27,18 @@ The sample application is composed of a single **OrderProcessingService** which 
 To create an order a **PendingOrder** class is written to a single JSON string. The default client for **AmazonSQSClientBuilder** is then used to send a message to the queue.
 
 ```
+@Override
 public void createOrder(int itemCount) {
-    try {
-        PendingOrder pendingOrder = new PendingOrder();
-        pendingOrder.setItemCount(itemCount);
-        pendingOrder.setRequestTime(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
-        String pendingOrderJson = configProperties.getObjectMapper().writeValueAsString(pendingOrder);
- 
-        final AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
-        sqs.sendMessage(new SendMessageRequest(configProperties.getSqsURL(), pendingOrderJson).withMessageGroupId("sixthpointGroupId"));
- 
-    } catch (final AmazonClientException | JsonProcessingException ase) {
-        log.error("Error Message: " + ase.getMessage());
-    }
+	try {
+	PendingOrder pendingOrder = new PendingOrder();
+	pendingOrder.setItemCount(itemCount);
+	pendingOrder.setRequestTime(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
+	String pendingOrderJson = objectMapper.writeValueAsString(pendingOrder);
+	amazonSQSAsync.sendMessage(new SendMessageRequest(endpoint, pendingOrderJson)
+					.withMessageGroupId("groupdId"));
+	} catch (final AmazonClientException | JsonProcessingException ase) {
+		log.error("Error Message: " + ase.getMessage());
+	}
 }
 ```
 The **PendingOrder** contains an **itemCount** which is the total number of items they are trying to purchase, and a **requestTime**. Since we are using content-based deduplication, this means that no more than one request can be done per second with the same **itemCount**.
