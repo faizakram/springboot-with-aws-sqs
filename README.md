@@ -49,16 +49,16 @@ Using the **@SqsListener** annotation, the application checks the **PendingOrder
 
 ```
 private int availableItems = 5;
-@SqsListener("PendingOrders.fifo")
-public void process(String json) throws IOException {
-    PendingOrder pendingOrder = configProperties.getObjectMapper().readValue(json, PendingOrder.class);
-    if(availableItems &gt; 0 &amp;&amp; availableItems &gt;= pendingOrder.getItemCount())
-    {
-        availableItems = availableItems - pendingOrder.getItemCount();
-        log.info("Items purchased, now have {} items remaining", availableItems);
-    } else {
-         log.error("No more items are available");
-    }
-}
+@SqsListener("pendingorders.fifo")
+	public void process(String json) throws IOException {
+		PendingOrder pendingOrder = objectMapper.readValue(json, PendingOrder.class);
+		log.info("Items purchased, now have {} items remaining", availableItems);
+		if (availableItems > 0 && availableItems >= pendingOrder.getItemCount()) {
+			availableItems = availableItems - pendingOrder.getItemCount();
+			log.info("Items purchased, now have {} items remaining", availableItems);
+		} else {
+			log.error("No more items are available");
+		}
+	}
 ```
 
